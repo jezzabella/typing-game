@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Typing Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+<script src="./script.js" defer></script>
+</head>
+<body>
+  <div id="viewport" class="viewport" data-state="start">
+
+    <div class="bg" id="bg"></div>
+
+    <!-- Animated clouds (upper sky) -->
+    <div class="clouds">
+      <div class="clouds__strip">
+        <div class="clouds__row clouds__row--a"></div>
+        <div class="clouds__row clouds__row--a"></div>
+      </div>
+      <div class="clouds__strip clouds__strip--slow">
+        <div class="clouds__row clouds__row--b"></div>
+        <div class="clouds__row clouds__row--b"></div>
+      </div>
+    </div>
+
+    <!-- Runners (visible race + results only) -->
+    <div class="runner runner--player" id="racerPlayer"></div>
+    <div class="runner runner--cpu"    id="racerCpu"></div>
+
+    <div class="ui">
+
+      <!-- START -->
+      <section class="scene scene--start" data-state="start">
+        <h1 class="title">TYPING RACE</h1>
+        <p class="subtitle">PRESS SPACE TO START</p>
+      </section>
+
+      <!-- NAME -->
+      <section class="scene scene--name" data-state="name" hidden>
+        <h1 class="title">TYPING RACE</h1>
+        <p class="subtitle">ENTER YOUR NAME</p>
+        <input id="nameInput" class="name-input" maxlength="10"
+               autocomplete="off" spellcheck="false"
+               placeholder="ENTER YOUR NAME">
+      </section>
+
+      <!-- LEVEL -->
+      <section class="scene scene--level" data-state="level" hidden>
+        <h1 class="title">TYPING RACE</h1>
+        <p class="subtitle">SELECT LEVEL</p>
+        <div class="level-row">
+          <button class="level-btn" data-level="easy">EASY</button>
+          <button class="level-btn" data-level="medium">MEDIUM</button>
+          <button class="level-btn" data-level="hard">HARD</button>
+        </div>
+      </section>
+
+      <!-- RACE -->
+      <section class="scene scene--race" data-state="race" hidden>
+        <h2 class="race-heading">TYPE TO RACE!</h2>
+        <p class="prompt" id="promptText"></p>
+        <div class="hud">
+          <span id="hudWpm">WPM 0</span>
+          <span id="hudAcc">ACC 100%</span>
+          <span id="hudTime">0.0s</span>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section class="scene scene--results" data-state="results" hidden>
+        <p class="results-label">YOUR SPEED</p>
+        <p class="results-wpm"><b id="rWpm">0</b> WPM</p>
+        <button class="cta-pill" id="btnShare">CHALLENGE A FRIEND</button>
+        <p class="cta-sub">OR PRESS SPACE TO PLAY AGAIN!</p>
+      </section>
+
+      <!-- SHARE / CHALLENGE -->
+      <section class="scene scene--share" data-state="share" hidden>
+        <p class="share-line"><b id="sName">JESS</b> HAS CHALLENGED YOU TO A</p>
+        <p class="share-line">TYPING RACE!</p>
+        <p class="share-line share-line--spaced">PRESS SPACE TO START!</p>
+      </section>
+
+    </div>
+  </div>
+</body>
+</html>

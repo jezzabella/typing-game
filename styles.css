@@ -1,0 +1,246 @@
+/* =========================================================
+   Typing Race — asset-driven visual layer.
+   Env art = /assets/screen-*.png. Clouds + runners layered on top.
+   ========================================================= */
+
+:root{
+  --ink:#1c2340;
+  --sky:#5cb6e6;
+  --pink:#e27a92;
+  --accent:#f6c636;
+  --ok:#3a9a3f;
+  --bad:#c74a34;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;image-rendering:pixelated}
+body{display:grid;place-items:center;overflow:hidden;font-family:"Press Start 2P",monospace}
+
+/* ===== viewport ===== */
+.viewport{
+  position:relative;
+  width:min(96vw, calc(96vh * 1440/862));
+  aspect-ratio: 1440/862;
+  overflow:hidden;
+  box-shadow:0 0 0 4px #000, 0 12px 40px rgba(0,0,0,.6);
+}
+
+/* ===== base PNG (per-state) ===== */
+.bg{
+  position:absolute;inset:0;
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  z-index:0;
+}
+.viewport[data-state="start"]   .bg{background-image:url("./assets/screen-start.png")}
+.viewport[data-state="name"]    .bg{background-image:url("./assets/screen-start.png")}
+.viewport[data-state="name"]    .subtitle{ display:none; }
+.viewport[data-state="level"]   .bg{background-image:url("./assets/screen-start.png")}
+.viewport[data-state="race"]    .bg{background-image:url("./assets/screen-start.png")}
+.viewport[data-state="race"]    .hud{ display:none; }
+.viewport[data-state="results"] .bg{background-image:url("./assets/screen-share.png")}
+.viewport[data-state="share"]   .bg{background-image:url("./assets/screen-friend.png")}
+
+/* ===== clouds ===== */
+.clouds{
+  position:absolute;left:0;right:0;top:0;height:40%;
+  overflow:hidden;pointer-events:none;z-index:1;
+}
+.clouds__strip{
+  position:absolute;left:0;top:0;
+  width:200%;height:70%;
+  display:flex;
+  animation: cloud-drift 80s linear infinite;
+}
+.clouds__strip--slow{
+  top:18%;height:55%;
+  animation-duration:130s;
+  opacity:.85;
+}
+.clouds__row{
+  width:50%;height:100%;
+  background-repeat:no-repeat;
+  background-size:100% 100%;
+  background-position:center;
+  image-rendering:pixelated;
+  background-color:transparent;
+  mix-blend-mode:screen;      /* drop the blue bg of the cloud PNG */
+}
+.clouds__row--a{background-image:url("./assets/clouds-1.png")}
+.clouds__row--b{background-image:url("./assets/clouds-3.png")}
+
+@keyframes cloud-drift{
+  from{ transform:translateX(0); }
+  to  { transform:translateX(-50%); }
+}
+
+/* ===== runner sprites =====
+   Sheet: 880x200, 8 columns x 2 rows, frame = 110x100.
+   Displayed at 66x60 (0.6x). Sheet displayed 528x120. */
+.runner{
+  position:absolute;
+  width:66px;height:60px;
+  background-image:url("./assets/runners.png");
+  background-repeat:no-repeat;
+  background-size:528px 120px;
+  background-position:0 0;
+  image-rendering:pixelated;
+  z-index:3;
+  display:none;
+  transition:left .14s linear, bottom .14s linear;
+}
+.runner--cpu{ background-position:0 -60px; }
+
+.viewport[data-state="race"]    .runner,
+.viewport[data-state="results"] .runner{ display:block; }
+
+@keyframes run-top{ from{ background-position:0 0 }    to{ background-position:-528px 0 } }
+@keyframes run-bot{ from{ background-position:0 -60px } to{ background-position:-528px -60px } }
+.viewport[data-state="race"] .runner--player{ animation: run-top .55s steps(8) infinite; }
+.viewport[data-state="race"] .runner--cpu   { animation: run-bot .60s steps(8) infinite; }
+
+.runner--player{ left:6%; bottom:17%; }
+.runner--cpu   { left:6%; bottom:8%;  }
+
+/* ===== UI overlay layer ===== */
+.ui{position:absolute;inset:0;z-index:4}
+.scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;
+}
+.scene[hidden]{display:none}
+
+/* ----- shared title / subtitle ----- */
+.title{
+  margin-top:7%;
+  color:#fff;
+  font-size:clamp(28px, 5.5vw, 78px);
+  letter-spacing:.08em;
+  text-shadow: 4px 4px 0 var(--ink);
+}
+.subtitle{
+  margin-top:1.2em;
+  color:var(--ink);
+  font-size:clamp(12px, 1.7vw, 22px);
+  letter-spacing:.18em;
+}
+
+/* ----- NAME input (navy pill, white border; placeholder = "ENTER YOUR NAME") ----- */
+.name-input{
+  margin-top:8%;
+  width:44%;
+  padding:16px 20px;
+  font-family:inherit;
+  font-size:clamp(12px, 1.5vw, 18px);
+  letter-spacing:.2em;
+  text-align:center;
+  text-transform:uppercase;
+  color:#fff;
+  background:#1c2b64;
+  border:3px solid #fff;
+  outline:none;
+  caret-color:#fff;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.name-input::placeholder{ color:#fff; opacity:1; }
+.name-input:focus{ outline:none; }
+.name-input:-webkit-autofill,
+.name-input:-webkit-autofill:hover,
+.name-input:-webkit-autofill:focus{
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--ink);
+}
+
+/* ----- LEVEL buttons (navy tile, selected has white outline) ----- */
+.level-row{ display:flex; gap:22px; margin-top:4%; }
+.level-btn{
+  font-family:inherit;
+  font-size:clamp(12px, 1.5vw, 18px);
+  letter-spacing:.16em;
+  color:#fff;
+  background:#1c2b64;
+  border:3px solid #1c2b64;
+  padding:14px 28px;
+  cursor:pointer;
+}
+.level-btn.is-selected{ border-color:#fff; }
+
+/* ----- RACE ----- */
+.race-heading{
+  margin-top:6%;
+  color:var(--ink);
+  font-size:clamp(14px, 2vw, 24px);
+  letter-spacing:.18em;
+}
+.prompt{
+  margin-top:3%;
+  width:54%;
+  color:var(--ink);
+  font-size:clamp(13px, 1.8vw, 22px);
+  line-height:1.8;
+  letter-spacing:.04em;
+  text-align:center;
+  word-spacing:.15em;
+}
+.prompt .ok  { color:var(--ok); }
+.prompt .bad { color:var(--bad); background:rgba(231,122,99,.35) }
+.prompt .cur { background:var(--accent); color:var(--ink); }
+
+.hud{
+  position:absolute;right:2.5%;top:2.5%;
+  display:flex;gap:14px;
+  background:var(--ink);color:#f7f0d8;
+  padding:8px 12px;font-size:10px;letter-spacing:.12em;
+}
+
+/* ----- RESULTS ----- */
+.results-label{
+  margin-top:7%;
+  color:var(--ink);
+  font-size:clamp(14px,2vw,24px);
+  letter-spacing:.2em;
+}
+.results-wpm{
+  margin-top:2%;
+  color:var(--accent);
+  font-size:clamp(28px, 5vw, 64px);
+  letter-spacing:.12em;
+  text-shadow: 3px 3px 0 var(--ink);
+}
+.results-wpm b{font-weight:normal}
+.cta-pill{
+  margin-top:3%;
+  padding:18px 44px;
+  font-family:inherit;
+  font-size:clamp(14px, 2vw, 22px);
+  letter-spacing:.16em;
+  color:#fff;
+  background:var(--pink);
+  border:3px solid #fff;
+  cursor:pointer;
+}
+.cta-sub{
+  margin-top:1.6em;
+  color:#fff;
+  font-size:clamp(11px,1.5vw,18px);
+  letter-spacing:.18em;
+  text-shadow:2px 2px 0 var(--ink);
+}
+
+/* ----- SHARE (incoming challenge) ----- */
+.share-line{
+  margin-top:1.2em;
+  color:var(--ink);
+  font-size:clamp(13px, 1.8vw, 22px);
+  letter-spacing:.14em;
+  line-height:1.6;
+  text-align:center;
+}
+.share-line:first-of-type{ margin-top:9%; }
+.share-line--spaced{ margin-top:3em; }
+.share-line b{font-weight:normal}

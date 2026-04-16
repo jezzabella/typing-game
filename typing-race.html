@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Typing Race</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: 'Press Start 2P', monospace;
+    image-rendering: pixelated;
+    color: #fff;
+    overflow: hidden;
+  }
+  body {
+    background: #5c94fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .game {
+    width: 100%;
+    max-width: 960px;
+    height: 100vh;
+    max-height: 720px;
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #000;
+    background: #5c94fc;
+  }
+
+  /* Sky with pixel clouds */
+  .sky {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 45%;
+    background: #5c94fc;
+    overflow: hidden;
+  }
+  .cloud {
+    position: absolute;
+    width: 96px; height: 32px;
+    background:
+      radial-gradient(circle at 16px 16px, #fff 14px, transparent 15px),
+      radial-gradient(circle at 40px 8px,  #fff 16px, transparent 17px),
+      radial-gradient(circle at 64px 14px, #fff 14px, transparent 15px),
+      radial-gradient(circle at 80px 20px, #fff 10px, transparent 11px);
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.1));
+    animation: drift 40s linear infinite;
+  }
+  .cloud:nth-child(1) { top: 20px; left: 5%; animation-duration: 45s; }
+  .cloud:nth-child(2) { top: 60px; left: 35%; animation-duration: 55s; transform: scale(1.3); }
+  .cloud:nth-child(3) { top: 30px; left: 70%; animation-duration: 50s; transform: scale(0.9); }
+  .cloud:nth-child(4) { top: 90px; left: 15%; animation-duration: 60s; transform: scale(1.1); }
+  @keyframes drift {
+    from { margin-left: -200px; }
+    to { margin-left: 100%; }
+  }
+
+  /* Ground */
+  .ground {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 55%;
+    background: linear-gradient(#e67e22 0 20px, #c0392b 20px 40px, #e67e22 40px);
+    background-color: #e67e22;
+  }
+  .ground::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 24px;
+    background:
+      repeating-linear-gradient(90deg, #2ecc40 0 16px, #27ae60 16px 32px);
+  }
+  .ground::after {
+    content: '';
+    position: absolute;
+    top: 24px; left: 0; right: 0; bottom: 0;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(0,0,0,0.12) 3px, transparent 4px),
+      radial-gradient(circle at 30% 60%, rgba(0,0,0,0.12) 2px, transparent 3px),
+      radial-gradient(circle at 55% 40%, rgba(0,0,0,0.12) 3px, transparent 4px),
+      radial-gradient(circle at 75% 80%, rgba(0,0,0,0.12) 2px, transparent 3px),
+      radial-gradient(circle at 90% 30%, rgba(0,0,0,0.12) 3px, transparent 4px);
+    background-size: 200px 200px;
+  }
+
+  /* Panel (card with pixel border) */
+  .panel {
+    position: relative;
+    background: #5c94fc;
+    padding: 24px 28px;
+    border: 4px solid #000;
+    box-shadow: 0 4px 0 #000, 8px 8px 0 rgba(0,0,0,0.35);
+    color: #fff;
+    text-align: center;
+    image-rendering: pixelated;
+  }
+  .panel.light {
+    background: #fff;
+    color: #000;
+  }
+
+  .title {
+    font-size: 36px;
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 4px 4px 0 #000;
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #000;
+    background: #fff;
+    padding: 8px 12px;
+    border: 3px solid #000;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+
+  button, .btn {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 12px 20px;
+    background: #e52521;
+    color: #fff;
+    border: 4px solid #000;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #000;
+    letter-spacing: 2px;
+    transition: transform 0.05s;
+  }
+  button:hover { background: #ff3a36; }
+  button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+  button.alt { background: #00a651; }
+  button.alt:hover { background: #18c268; }
+  button.blue { background: #0071bc; }
+  button.blue:hover { background: #1e8fd9; }
+
+  input[type="text"] {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 12px;
+    border: 4px solid #000;
+    background: #fff;
+    color: #000;
+    width: 260px;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+  input:focus { outline: 3px solid #e52521; }
+
+  /* Screens */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 5;
+    padding: 20px;
+  }
+  .screen.active { display: flex; }
+
+  .row { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+
+  /* Race screen */
+  #race { padding: 0; }
+  .race-ui {
+    position: absolute;
+    top: 16px; left: 16px; right: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 10;
+  }
+  .hud {
+    font-size: 10px;
+    background: #fff;
+    color: #000;
+    padding: 8px 10px;
+    border: 3px solid #000;
+    letter-spacing: 1px;
+  }
+
+  .text-panel {
+    position: absolute;
+    top: 70px; left: 24px; right: 24px;
+    background: rgba(255,255,255,0.95);
+    border: 4px solid #000;
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    color: #000;
+    max-height: 110px;
+    overflow: hidden;
+    z-index: 8;
+  }
+  .text-panel .char { }
+  .text-panel .ok { color: #00a651; }
+  .text-panel .bad { color: #e52521; background: #ffd1cf; }
+  .text-panel .cur { background: #ffe066; animation: blink 0.8s steps(2) infinite; }
+  @keyframes blink { 50% { background: transparent; } }
+
+  .input-row {
+    position: absolute;
+    left: 24px; right: 24px; bottom: 24px;
+    z-index: 8;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .input-row input {
+    flex: 1;
+    min-width: 260px;
+    max-width: 420px;
+  }
+
+  /* Track with players */
+  .track {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 12%;
+    height: 120px;
+    z-index: 6;
+    padding: 0 24px;
+  }
+  .lane {
+    position: relative;
+    height: 50px;
+    margin-bottom: 8px;
+    background: #c0392b;
+    border: 3px solid #000;
+    box-shadow: inset 0 4px 0 #e67e22, inset 0 -4px 0 #8b2818;
+  }
+  .lane::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 40px;
+    height: 3px;
+    transform: translateY(-50%);
+    background: repeating-linear-gradient(90deg, #fff 0 10px, transparent 10px 22px);
+    opacity: 0.6;
+  }
+  .lane .flag {
+    position: absolute;
+    top: -8px; right: 6px;
+    width: 28px; height: 56px;
+    background:
+      linear-gradient(#000 0 4px, transparent 4px) no-repeat,
+      repeating-conic-gradient(#000 0 25%, #fff 0 50%) 0 0 / 12px 12px;
+    border: 2px solid #000;
+  }
+  .racer {
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    transition: left 0.15s linear;
+    filter: drop-shadow(2px 2px 0 #000);
+    z-index: 2;
+  }
+  .racer .tag {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #fff;
+    background: #000;
+    padding: 2px 4px;
+    white-space: nowrap;
+    margin-bottom: 2px;
+  }
+
+  /* Result/Challenge screens */
+  .big {
+    font-size: 28px;
+    color: #ffe066;
+    text-shadow: 3px 3px 0 #000;
+    margin: 10px 0;
+  }
+  .small { font-size: 10px; letter-spacing: 1px; margin-top: 8px; opacity: 0.9; }
+
+  .winner-banner {
+    font-size: 20px;
+    color: #ffe066;
+    text-shadow: 3px 3px 0 #000;
+    margin-bottom: 12px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+    font-size: 10px;
+    color: #000;
+  }
+  .stat-card {
+    background: #fff;
+    border: 3px solid #000;
+    padding: 10px;
+    text-align: left;
+  }
+  .stat-card b { color: #e52521; display: block; margin-bottom: 6px; font-size: 11px; }
+
+  .level-btn { min-width: 110px; }
+
+  /* Countdown */
+  .countdown {
+    font-size: 96px;
+    color: #ffe066;
+    text-shadow: 6px 6px 0 #000;
+  }
+
+  @media (max-width: 520px) {
+    .title { font-size: 22px; }
+    .text-panel { font-size: 11px; top: 60px; }
+    .hud { font-size: 8px; }
+    input[type="text"] { width: 220px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game">
+  <div class="sky">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+  <div class="ground"></div>
+
+  <!-- Screen: Home / Name entry -->
+  <div class="screen active" id="home">
+    <div class="panel">
+      <div class="title">TYPING RACE</div>
+      <div class="subtitle">ENTER YOUR NAMES</div>
+      <div style="display:flex;flex-direction:column;gap:12px;align-items:center;">
+        <input type="text" id="name1" maxlength="10" placeholder="PLAYER 1" value="MARIO" />
+        <input type="text" id="name2" maxlength="10" placeholder="PLAYER 2" value="LUIGI" />
+      </div>
+      <div class="row">
+        <button id="toLevel">NEXT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen: Select Level -->
+  <div class="screen" id="levelScreen">
+    <div class="panel">
+      <div class="title">TYPING RACE</div>
+      <div class="subtitle">SELECT LEVEL</div>
+      <div class="row">
+        <button class="alt level-btn" data-level="easy">EASY</button>
+        <button class="level-btn" data-level="medium">MEDIUM</button>
+        <button class="blue level-btn" data-level="hard">HARD</button>
+      </div>
+      <div class="row">
+        <button class="blue" id="backHome" style="font-size:10px;padding:8px 12px;">BACK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen: Ready -->
+  <div class="screen" id="ready">
+    <div class="panel">
+      <div class="title">TYPING RACE</div>
+      <div class="subtitle">PRESS SPACE TO START</div>
+      <div id="countdown" class="countdown" style="display:none;">3</div>
+    </div>
+  </div>
+
+  <!-- Screen: Race -->
+  <div class="screen" id="race">
+    <div class="race-ui">
+      <div class="hud" id="hud1">P1 · WPM 0</div>
+      <div class="hud" id="timer">00:00</div>
+      <div class="hud" id="hud2">P2 · WPM 0</div>
+    </div>
+    <div class="text-panel" id="textPanel"></div>
+
+    <div class="track">
+      <div class="lane">
+        <div class="flag"></div>
+        <div class="racer" id="racer1">🏎️<span class="tag" id="tag1">P1</span></div>
+      </div>
+      <div class="lane">
+        <div class="flag"></div>
+        <div class="racer" id="racer2">🚗<span class="tag" id="tag2">P2</span></div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="input1" autocomplete="off" spellcheck="false" placeholder="P1 types here" />
+      <input type="text" id="input2" autocomplete="off" spellcheck="false" placeholder="P2 types here" />
+    </div>
+  </div>
+
+  <!-- Screen: Results -->
+  <div class="screen" id="results">
+    <div class="panel">
+      <div class="winner-banner" id="winnerText">PLAYER 1 WINS!</div>
+      <div class="subtitle">RESULTS</div>
+      <div class="stats">
+        <div class="stat-card">
+          <b id="s1Name">P1</b>
+          WPM: <span id="s1Wpm">0</span><br>
+          ACC: <span id="s1Acc">0</span>%<br>
+          TIME: <span id="s1Time">0s</span>
+        </div>
+        <div class="stat-card">
+          <b id="s2Name">P2</b>
+          WPM: <span id="s2Wpm">0</span><br>
+          ACC: <span id="s2Acc">0</span>%<br>
+          TIME: <span id="s2Time">0s</span>
+        </div>
+      </div>
+      <div class="row">
+        <button class="alt" id="rematch">REMATCH</button>
+        <button class="blue" id="newGame">NEW GAME</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEXTS = {
+  easy: [
+    "the quick brown fox jumps over the lazy dog near the old barn",
+    "super mario runs and jumps on bricks to save the princess today",
+    "a bright sun shines over a green field full of happy little birds"
+  ],
+  medium: [
+    "Racing through pixelated plains, two brave typists clash keys under a sky of cotton clouds and warm sunshine.",
+    "Every keystroke brings glory; every typo is a stumble. Stay calm, breathe, and let your fingers find the rhythm of the race.",
+    "In the land of the eight bit kingdom, typing is a noble sport, and only the swiftest hands may claim the golden trophy."
+  ],
+  hard: [
+    "Quixotic jesters vex, bamboozle, & zigzag through 42 jaunty puzzles—while phlegmatic knights quaff frothy mead: who shall prevail?",
+    "Syzygy! Onomatopoeia! Pneumonoultramicroscopic verbiage cascades across the checkered track; misplaced semicolons; wayward apostrophes.",
+    "Benchmark: 98.7% accuracy, <2 errors, & sub-30s completion. Punctuation—em-dashes, commas, colons—tests every finger's discipline."
+  ]
+};
+
+const $ = (id) => document.getElementById(id);
+const screens = ['home','levelScreen','ready','race','results'];
+function show(id) {
+  screens.forEach(s => $(s).classList.toggle('active', s === id));
+}
+
+let state = {
+  p1: 'PLAYER 1',
+  p2: 'PLAYER 2',
+  level: 'easy',
+  text: '',
+  startTime: 0,
+  endTime: 0,
+  timerId: null,
+  countdownId: null,
+  players: null
+};
+
+function makePlayer(name, inputEl, racerEl, tagEl, hudEl) {
+  return {
+    name, inputEl, racerEl, tagEl, hudEl,
+    typed: '', errors: 0, totalKeys: 0, finished: false, finishTime: 0
+  };
+}
+
+$('toLevel').onclick = () => {
+  state.p1 = ($('name1').value || 'P1').toUpperCase().slice(0,10);
+  state.p2 = ($('name2').value || 'P2').toUpperCase().slice(0,10);
+  show('levelScreen');
+};
+$('backHome').onclick = () => show('home');
+
+document.querySelectorAll('[data-level]').forEach(btn => {
+  btn.onclick = () => {
+    state.level = btn.dataset.level;
+    goReady();
+  };
+});
+
+function goReady() {
+  show('ready');
+  $('countdown').style.display = 'none';
+  const pool = TEXTS[state.level];
+  state.text = pool[Math.floor(Math.random() * pool.length)];
+  document.addEventListener('keydown', spaceStart);
+}
+
+function spaceStart(e) {
+  if (e.code === 'Space') {
+    document.removeEventListener('keydown', spaceStart);
+    startCountdown();
+  }
+}
+
+function startCountdown() {
+  const el = $('countdown');
+  el.style.display = 'block';
+  let n = 3;
+  el.textContent = n;
+  state.countdownId = setInterval(() => {
+    n--;
+    if (n <= 0) {
+      clearInterval(state.countdownId);
+      el.textContent = 'GO!';
+      setTimeout(beginRace, 500);
+    } else {
+      el.textContent = n;
+    }
+  }, 800);
+}
+
+function beginRace() {
+  show('race');
+  $('tag1').textContent = state.p1;
+  $('tag2').textContent = state.p2;
+
+  const p1 = makePlayer(state.p1, $('input1'), $('racer1'), $('tag1'), $('hud1'));
+  const p2 = makePlayer(state.p2, $('input2'), $('racer2'), $('tag2'), $('hud2'));
+  state.players = [p1, p2];
+
+  [p1, p2].forEach(p => {
+    p.inputEl.value = '';
+    p.inputEl.disabled = false;
+    p.inputEl.addEventListener('input', () => handleInput(p));
+    p.inputEl.addEventListener('keydown', preventCheat);
+  });
+  // Focus input1 first; player 2 should click to focus their own.
+  p1.inputEl.focus();
+
+  renderText(p1);
+  state.startTime = performance.now();
+  state.timerId = setInterval(tick, 100);
+}
+
+function preventCheat(e) {
+  // Disallow paste via keyboard
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) e.preventDefault();
+}
+
+function tick() {
+  const elapsed = (performance.now() - state.startTime) / 1000;
+  const m = Math.floor(elapsed / 60).toString().padStart(2,'0');
+  const s = Math.floor(elapsed % 60).toString().padStart(2,'0');
+  $('timer').textContent = `${m}:${s}`;
+  state.players.forEach(updateHud);
+}
+
+function wpm(p, elapsedSec) {
+  if (elapsedSec <= 0) return 0;
+  const words = p.typed.length / 5;
+  return Math.max(0, Math.round((words / elapsedSec) * 60));
+}
+function accuracy(p) {
+  if (p.totalKeys === 0) return 100;
+  return Math.max(0, Math.round(100 * (p.totalKeys - p.errors) / p.totalKeys));
+}
+
+function updateHud(p) {
+  const elapsed = ((p.finished ? p.finishTime : performance.now()) - state.startTime) / 1000;
+  const w = wpm(p, elapsed);
+  p.hudEl.textContent = `${p.name} · WPM ${w}`;
+}
+
+function renderText(forPlayer) {
+  const panel = $('textPanel');
+  const text = state.text;
+  const typed = forPlayer.typed;
+  let html = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i] === ' ' ? '&nbsp;' : escapeHtml(text[i]);
+    let cls = '';
+    if (i < typed.length) {
+      cls = typed[i] === text[i] ? 'ok' : 'bad';
+    } else if (i === typed.length) {
+      cls = 'cur';
+    }
+    html += `<span class="char ${cls}">${ch}</span>`;
+  }
+  panel.innerHTML = html;
+}
+
+function escapeHtml(c) {
+  return c.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function handleInput(p) {
+  if (p.finished) { p.inputEl.value = ''; return; }
+  const val = p.inputEl.value;
+  const text = state.text;
+
+  // Only accept chars matching the next char; count errors on mismatch.
+  // We interpret raw input char-by-char: build new typed string from p.typed + new chars typed.
+  // Simpler: compare val against text. Each new keystroke either adds a correct or wrong char.
+  // We'll reconcile: new length = val.length. If longer than typed, the diff is new input.
+  const prev = p.typed;
+  if (val.length > prev.length) {
+    const addedCount = val.length - prev.length;
+    for (let i = 0; i < addedCount; i++) {
+      const idx = prev.length + i;
+      if (idx >= text.length) break;
+      const ch = val[idx];
+      p.totalKeys++;
+      if (ch !== text[idx]) p.errors++;
+    }
+    p.typed = val.slice(0, text.length);
+  } else {
+    // allow backspace
+    p.typed = val;
+  }
+  // keep input visually in sync (trim beyond text length)
+  if (p.inputEl.value.length > text.length) {
+    p.inputEl.value = p.inputEl.value.slice(0, text.length);
+  }
+
+  // Update position
+  const pct = Math.min(1, p.typed.length / text.length);
+  const lane = p.racerEl.parentElement;
+  const maxLeft = lane.clientWidth - 60;
+  p.racerEl.style.left = (pct * maxLeft) + 'px';
+
+  // Re-render text panel to reflect the focused player's progress
+  // Show whichever player is currently active (has focus)
+  renderText(document.activeElement === p.inputEl ? p : state.players.find(x => x !== p));
+
+  // Check finish: exact match
+  if (p.typed === text) {
+    p.finished = true;
+    p.finishTime = performance.now();
+    p.inputEl.disabled = true;
+    checkEnd();
+  }
+}
+
+document.addEventListener('focusin', (e) => {
+  if (!state.players) return;
+  const p = state.players.find(x => x.inputEl === e.target);
+  if (p) renderText(p);
+});
+
+function checkEnd() {
+  const [a, b] = state.players;
+  if (a.finished && b.finished) return endRace();
+  // End if one finished and the other can't catch up? Simpler: end when both finished OR 60s past first finish.
+  const first = a.finished ? a : (b.finished ? b : null);
+  if (first) {
+    setTimeout(() => { if (!state.players.every(p => p.finished)) endRace(); }, 5000);
+  }
+}
+
+function endRace() {
+  clearInterval(state.timerId);
+  const [a, b] = state.players;
+  [a, b].forEach(p => {
+    p.inputEl.disabled = true;
+    if (!p.finished) p.finishTime = performance.now();
+  });
+
+  const winner =
+    (a.finished && !b.finished) ? a :
+    (b.finished && !a.finished) ? b :
+    (a.finishTime <= b.finishTime ? a : b);
+
+  $('winnerText').textContent = `${winner.name} WINS!`;
+
+  const fill = (prefix, p) => {
+    const elapsed = (p.finishTime - state.startTime) / 1000;
+    $(prefix + 'Name').textContent = p.name;
+    $(prefix + 'Wpm').textContent = wpm(p, elapsed);
+    $(prefix + 'Acc').textContent = accuracy(p);
+    $(prefix + 'Time').textContent = elapsed.toFixed(1) + 's';
+  };
+  fill('s1', a); fill('s2', b);
+  show('results');
+}
+
+$('rematch').onclick = () => goReady();
+$('newGame').onclick = () => show('home');
+
+</script>
+</body>
+</html>

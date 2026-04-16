@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__967ec141-7191-4aea-8f0a-d7680b45219a__get_metadata",
+      "mcp__967ec141-7191-4aea-8f0a-d7680b45219a__get_design_context",
+      "mcp__967ec141-7191-4aea-8f0a-d7680b45219a__get_screenshot",
+      "Bash(python3 -c ':*)",
+      "mcp__967ec141-7191-4aea-8f0a-d7680b45219a__get_variable_defs",
+      "Bash(python3)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
