@@ -100,8 +100,24 @@ body{display:grid;place-items:center;overflow:hidden;font-family:"Press Start 2P
 .viewport[data-state="race"] .runner--player{ animation: run-top .55s steps(8) infinite; }
 .viewport[data-state="race"] .runner--cpu   { animation: run-bot .60s steps(8) infinite; }
 
-.runner--player{ left:6%; bottom:17%; }
-.runner--cpu   { left:6%; bottom:8%;  }
+.runner--player{
+  left: 12%;     /* move right into box */
+  bottom: 26%;  /* align with bottom lane */
+}
+.runner--cpu{
+  left: 8%;    /* slightly more right (top lane is shifted) */
+  bottom: 18%;  /* align with top lane */
+}
+.runner--player {
+  z-index: 5;
+  transform: scale(1.02)
+}
+
+.runner--cpu {
+  z-index: 4;
+  transform: scale(0.96);
+}
+
 
 /* ===== UI overlay layer ===== */
 .ui{position:absolute;inset:0;z-index:4}
