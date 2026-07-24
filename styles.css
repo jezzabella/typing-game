@@ -39,7 +39,7 @@ body{display:grid;place-items:center;overflow:hidden;font-family:"Press Start 2P
 .viewport[data-state="level"]   .bg{background-image:url("./assets/screen-start.png")}
 .viewport[data-state="race"]    .bg{background-image:url("./assets/screen-start.png")}
 .viewport[data-state="race"]    .hud{ display:none; }
-.viewport[data-state="results"] .bg{background-image:url("./assets/screen-share.png")}
+.viewport[data-state="results"] .bg{background-image:url("./assets/screen-start.png")}
 .viewport[data-state="share"]   .bg{background-image:url("./assets/screen-friend.png")}
 
 /* ===== clouds ===== */
@@ -240,10 +240,10 @@ body{display:grid;place-items:center;overflow:hidden;font-family:"Press Start 2P
   border:3px solid #fff;
   cursor:pointer;
 }
-.cta-sub{
-  margin-top:1.6em;
+.results-replay{
+  margin-top:2.5%;
   color:#fff;
-  font-size:clamp(11px,1.5vw,18px);
+  font-size:clamp(12px, 1.6vw, 20px);
   letter-spacing:.18em;
   text-shadow:2px 2px 0 var(--ink);
 }

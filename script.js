@@ -31,7 +31,7 @@
     name(){ setTimeout(()=>document.getElementById("nameInput").focus(), 30); },
     level(){ updateLevelSelection(); },
     race(){ startRace(); },
-    results(){ fillResults(); positionRacers(1, .9); },
+    results(){ fillResults(); positionRacersFinish(); },
     share(){ fillShare(); },
   };
 
@@ -42,6 +42,10 @@
     const start=6, end=58;
     racerP.style.left = (start + pPct*(end-start)) + "%";
     racerC.style.left = (start + cPct*(end-start)) + "%";
+  }
+  function positionRacersFinish(){
+    racerP.style.left = "80%";
+    racerC.style.left = "76%";
   }
 
   // ---------- global keyboard routing ----------
@@ -153,6 +157,7 @@
   // ---------- share ----------
   function fillShare(){
     document.getElementById("sName").textContent = state.name;
+    document.getElementById("sWpm").textContent = state.wpm || 0;
   }
 
   go("start");
