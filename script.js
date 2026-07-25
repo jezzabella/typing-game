@@ -44,8 +44,14 @@
     racerC.style.left = (start + cPct*(end-start)) + "%";
   }
   function positionRacersFinish(){
-    racerP.style.left = "80%";
-    racerC.style.left = "76%";
+    const start=6, end=58, finish=80;
+    const playerWon = state.place === "1st";
+    racerP.style.left = playerWon
+      ? finish + "%"
+      : (start + state.finalPProg * (end - start)) + "%";
+    racerC.style.left = playerWon
+      ? (start + state.finalCProg * (end - start)) + "%"
+      : finish + "%";
   }
 
   // ---------- global keyboard routing ----------
@@ -116,6 +122,8 @@
 
     if (pProg >= 1 || cpuProg >= 1){
       state.place = pProg >= 1 && pProg >= cpuProg ? "1st" : "2nd";
+      state.finalPProg = pProg;
+      state.finalCProg = cpuProg;
       clearInterval(state.timerId);
       setTimeout(()=>go("results"), 400);
     }
