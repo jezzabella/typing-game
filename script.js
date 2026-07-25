@@ -31,27 +31,16 @@
     name(){ setTimeout(()=>document.getElementById("nameInput").focus(), 30); },
     level(){ updateLevelSelection(); },
     race(){ startRace(); },
-    results(){ fillResults(); positionRacersFinish(); },
+    results(){ fillResults(); },
     share(){ fillShare(); },
   };
 
   const racerP = document.getElementById("racerPlayer");
   const racerC = document.getElementById("racerCpu");
   function positionRacers(pPct, cPct){
-    // Track usable travel inside the reference roughly 6% -> 58% of viewport.
-    const start=6, end=58;
+    const start=6, end=80;
     racerP.style.left = (start + pPct*(end-start)) + "%";
     racerC.style.left = (start + cPct*(end-start)) + "%";
-  }
-  function positionRacersFinish(){
-    const start=6, end=58, finish=80;
-    const playerWon = state.place === "1st";
-    racerP.style.left = playerWon
-      ? finish + "%"
-      : (start + state.finalPProg * (end - start)) + "%";
-    racerC.style.left = playerWon
-      ? (start + state.finalCProg * (end - start)) + "%"
-      : finish + "%";
   }
 
   // ---------- global keyboard routing ----------
@@ -122,8 +111,6 @@
 
     if (pProg >= 1 || cpuProg >= 1){
       state.place = pProg >= 1 && pProg >= cpuProg ? "1st" : "2nd";
-      state.finalPProg = pProg;
-      state.finalCProg = cpuProg;
       clearInterval(state.timerId);
       setTimeout(()=>go("results"), 400);
     }
